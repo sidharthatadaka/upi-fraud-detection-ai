@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: upi-fraud-detection-ai
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DB_TYPE
+        value: sqlite
+      - key: RISK_THRESHOLD_LOW
+        value: "35"
+      - key: RISK_THRESHOLD_HIGH
+        value: "70"
+      - key: AUTO_BLOCK_HIGH_RISK
+        value: "true"

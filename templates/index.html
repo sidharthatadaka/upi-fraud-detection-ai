@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPI Fraud Reporting & Pattern Detection Using AI</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/toast.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="navbar">
+    <a href="#dashboard" class="nav-brand" onclick="navigateTo('dashboard')">
+      <div class="brand-icon">🛡️</div>
+      <div>
+        <div class="brand-title">UPI FRAUD GUARD AI</div>
+        <span class="brand-subtitle">Pattern Detection & Payment Security</span>
+      </div>
+    </a>
+
+    <ul class="nav-links">
+      <li><a class="nav-link active" data-tab="dashboard" onclick="navigateTo('dashboard')">📊 Dashboard</a></li>
+      <li><a class="nav-link" data-tab="check-payment" onclick="navigateTo('check-payment')">⚡ Check Payment Risk</a></li>
+      <li><a class="nav-link" data-tab="report-fraud" onclick="navigateTo('report-fraud')">🚨 Report Fraud</a></li>
+      <li><a class="nav-link" data-tab="history" onclick="navigateTo('history')">📜 Report History</a></li>
+      <li><a class="nav-link" data-tab="receiver-lookup" onclick="navigateTo('receiver-lookup')">🔍 Receiver Risk Details</a></li>
+      <li><a class="nav-link" data-tab="admin" onclick="navigateTo('admin')">🔐 Admin Panel</a></li>
+    </ul>
+
+    <div class="nav-status">
+      <div class="pulse-badge" id="auto-refresh-badge" title="Auto-refreshing dashboard data every 5 seconds">
+        <span class="pulse-dot"></span>
+        <span id="auto-refresh-text">Live: 5s</span>
+      </div>
+      <span class="badge badge-info" id="db-engine-badge" style="font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;">DB: Loading...</span>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-content">
+
+    <!-- ======================================================== -->
+    <!-- 1. DASHBOARD PAGE -->
+    <!-- ======================================================== -->
+    <section id="page-dashboard" class="page-section active">
+      <div class="section-header">
+        <h1 class="section-title">AI Fraud Monitoring Dashboard</h1>
+        <p class="section-desc">Real-time surveillance of UPI fraud patterns, suspicious receivers, and proactive payment interceptions.</p>
+      </div>
+
+      <!-- Top Metric Cards -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">⚠️</div>
+          <div>
+            <div class="stat-val" id="stat-total-reports">0</div>
+            <div class="stat-label">Total Fraud Reports</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">🔍</div>
+          <div>
+            <div class="stat-val" id="stat-suspicious-receivers">0</div>
+            <div class="stat-label">Suspicious UPI IDs</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(220, 38, 38, 0.2); color: #ef4444;">🛑</div>
+          <div>
+            <div class="stat-val" id="stat-high-risk">0</div>
+            <div class="stat-label">High-Risk Receivers</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">💳</div>
+          <div>
+            <div class="stat-val" id="stat-payments-checked">0</div>
+            <div class="stat-label">Payments Checked</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">🛡️</div>
+          <div>
+            <div class="stat-val" id="stat-blocked-payments">0</div>
+            <div class="stat-label">Blocked Payment Attempts</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Columns: Categories & Recent Activities -->
+      <div class="dashboard-columns">
+        <!-- Left: Recent Fraud Reports & Intercepted Payments -->
+        <div>
+          <div class="card">
+            <div class="card-title">
+              <span>🚨 Recent Fraud Reports</span>
+              <button class="btn btn-secondary btn-sm" onclick="navigateTo('history')">View All History</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ref</th>
+                    <th>Receiver UPI</th>
+                    <th>Scam Category</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-recent-reports-body">
+                  <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Loading recent reports...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <span>🛑 Intercepted & Blocked Payments</span>
+              <span class="badge badge-high">Enforced by AI Engine</span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Block Ref</th>
+                    <th>Blocked UPI</th>
+                    <th>Attempted Amount</th>
+                    <th>Reason</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-recent-blocked-body">
+                  <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Loading blocked payments...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Fraud Categories & Quick Actions -->
+        <div>
+          <div class="card">
+            <div class="card-title">
+              <span>📊 Fraud Categories Detected</span>
+            </div>
+            <div id="category-distribution-list" style="display:flex; flex-direction:column; gap:10px;">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <div class="card" style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));">
+            <div class="card-title">
+              <span>⚡ Fast Test Scenarios</span>
+            </div>
+            <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:12px;">
+              Jump right into verifying risk detection and simulated payment blocking:
+            </p>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button class="btn btn-secondary" onclick="loadTestScenario('high_kyc')" style="text-align:left; justify-content:flex-start;">
+                🔴 Test High-Risk Fake KYC Payment (Auto Blocked)
+              </button>
+              <button class="btn btn-secondary" onclick="loadTestScenario('high_elec')" style="text-align:left; justify-content:flex-start;">
+                🔴 Test High-Risk Electricity Bill Scam (Auto Blocked)
+              </button>
+              <button class="btn btn-secondary" onclick="loadTestScenario('medium_crypto')" style="text-align:left; justify-content:flex-start;">
+                🟡 Test Medium-Risk Crypto Arbitrage Payment
+              </button>
+              <button class="btn btn-secondary" onclick="loadTestScenario('low_safe')" style="text-align:left; justify-content:flex-start;">
+                🟢 Test Low-Risk Genuine Merchant Payment
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- 2. CHECK PAYMENT RISK PAGE -->
+    <!-- ======================================================== -->
+    <section id="page-check-payment" class="page-section">
+      <div class="section-header">
+        <h1 class="section-title">UPI Payment Risk Evaluator</h1>
+        <p class="section-desc">Verify recipient legitimacy, check NLP scam patterns, and simulate secure payments with backend-enforced blocking.</p>
+      </div>
+
+      <!-- Quick Fill Pills -->
+      <div class="quick-pills">
+        <span style="font-size:0.8rem; color:var(--text-muted); align-self:center;">Pre-fill test:</span>
+        <button class="pill-btn" onclick="fillRiskForm('sbi.kyc.verification@okhdfcbank', 'SBI Helpdesk Official', '+91 98231 44521', 25000, 'Urgent KYC verification fee download AnyDesk app to unfreeze account')">🚨 High Risk (Fake KYC)</button>
+        <button class="pill-btn" onclick="fillRiskForm('electricity.bill.desk@paytm', 'Power Recovery Officer', '+91 87654 32190', 1450, 'Electricity bill unpaid power cut at 9:30 PM pay bill now')">🚨 High Risk (Power Cut Scam)</button>
+        <button class="pill-btn" onclick="fillRiskForm('crypto.gainz@okicici', 'Binance P2P Rapid', '+91 95432 10987', 5000, 'Crypto arbitrage task deposit')">⚠️ Medium Risk (Crypto P2P)</button>
+        <button class="pill-btn" onclick="fillRiskForm('rahul.sharma@okaxis', 'Rahul Sharma', '+91 98765 43210', 500, 'Dinner bill split')">✅ Low Risk (Clean Contact)</button>
+      </div>
+
+      <div class="card">
+        <form id="risk-check-form" onsubmit="handleCheckRisk(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Receiver UPI ID *</label>
+              <input type="text" id="risk-receiver-upi" class="form-input" placeholder="e.g. merchant@okaxis" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Receiver Display Name (Optional)</label>
+              <input type="text" id="risk-receiver-name" class="form-input" placeholder="e.g. Ramesh Stores">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Receiver Phone Number (Optional)</label>
+              <input type="text" id="risk-receiver-phone" class="form-input" placeholder="e.g. +91 98765 43210">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payment Amount (₹) *</label>
+              <input type="number" id="risk-amount" class="form-input" placeholder="e.g. 1500" step="0.01" min="1" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Payment Description / Message / Note</label>
+            <textarea id="risk-note" class="form-textarea" rows="2" placeholder="e.g. Payment for KYC update / Olx sale / monthly bill..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Associated URL / Link (Optional)</label>
+            <input type="url" id="risk-url" class="form-input" placeholder="e.g. http://support-apk.download">
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-check-risk">
+            🔍 Check Payment Risk Now
+          </button>
+        </form>
+      </div>
+
+      <!-- Risk Assessment Results Container -->
+      <div id="risk-result-container" style="display:none;">
+        <div id="risk-card" class="risk-result-card">
+          <div class="risk-header">
+            <div>
+              <span id="risk-level-badge" class="badge">EVALUATING</span>
+              <h2 id="risk-title" style="margin-top: 6px; font-size: 1.4rem;">Receiver Evaluation</h2>
+              <p id="risk-receiver-info" style="color:var(--text-secondary); font-size:0.88rem;"></p>
+            </div>
+            <div class="risk-score-display">
+              <span id="risk-score-val" class="score-num">--</span>
+              <span class="score-max">/100</span>
+            </div>
+          </div>
+
+          <div class="progress-bar-container">
+            <div id="risk-progress-bar" class="progress-bar-fill" style="width: 0%;"></div>
+          </div>
+
+          <!-- AI NLP Details Box -->
+          <div id="ai-nlp-box" style="background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 8px; margin-bottom: 14px; border: 1px solid var(--border-color);">
+            <div style="font-weight: 600; font-size: 0.86rem; color: #a5b4fc; margin-bottom: 4px; display:flex; align-items:center; gap:6px;">
+              <span>🤖 AI Pattern & NLP Analysis</span>
+            </div>
+            <div id="ai-nlp-details" style="font-size: 0.84rem; color: var(--text-secondary);">
+              Analyzing linguistic cues...
+            </div>
+          </div>
+
+          <!-- Reasons Explanations -->
+          <h4 style="font-size: 0.92rem; font-weight: 600; margin-bottom: 6px;">Evaluation Factors & Evidence:</h4>
+          <ul id="risk-reasons-list" class="reasons-list">
+            <!-- Dynamically populated -->
+          </ul>
+
+          <!-- Action / Payment Simulation Area -->
+          <div id="payment-action-area" style="margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--border-color);">
+            <!-- Populated dynamically based on Risk Level -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- 3. REPORT FRAUD PAGE -->
+    <!-- ======================================================== -->
+    <section id="page-report-fraud" class="page-section">
+      <div class="section-header">
+        <h1 class="section-title">Report Fraudulent UPI Recipient</h1>
+        <p class="section-desc">Submit fraud incidents to update pattern models, protect fellow citizens, and recalculate risk metrics in real-time.</p>
+      </div>
+
+      <div class="card">
+        <form id="fraud-report-form" onsubmit="handleSubmitFraudReport(event)" enctype="multipart/form-data">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Suspect UPI ID *</label>
+              <input type="text" id="report-upi" class="form-input" placeholder="e.g. fraudster@okaxis" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Suspect Name / Display Name</label>
+              <input type="text" id="report-name" class="form-input" placeholder="e.g. Helpdesk Agent">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Suspect Phone Number</label>
+              <input type="text" id="report-phone" class="form-input" placeholder="e.g. +91 98765 43210">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Amount Defrauded / Demanded (₹)</label>
+              <input type="number" id="report-amount" class="form-input" placeholder="e.g. 5000" step="0.01">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Fraud Category *</label>
+              <select id="report-category" class="form-select" required>
+                <option value="">Select Category...</option>
+                <option value="Fake KYC Messages">Fake KYC Messages (PAN/Aadhaar/SIM)</option>
+                <option value="Fraudulent Payment Requests">Fraudulent Payment Requests (Collect fraud)</option>
+                <option value="QR-Code Scams">QR-Code Scams (Scan to receive deception)</option>
+                <option value="Fake Insurance Agents">Fake Insurance Agents (Lapsed policy bonus)</option>
+                <option value="Fake Bank Employees">Fake Bank Employees (Card/Manager impersonation)</option>
+                <option value="Fake Customer Care Representatives">Fake Customer Care Representatives (Power cut/Support)</option>
+                <option value="Impersonation and Investment Scams">Impersonation and Investment Scams (Telegram/Crypto/Tasks)</option>
+                <option value="Other">Other UPI Scam</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Suspicious Link / Website / APK URL</label>
+              <input type="text" id="report-url" class="form-input" placeholder="e.g. http://sbi-kyc-verify.apk">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Incident Description * (AI analyzes patterns in real-time)</label>
+            <textarea id="report-desc" class="form-textarea" rows="4" placeholder="Detail how the fraud occurred, what message was sent, what apps were requested (e.g. AnyDesk, QuickSupport)..." required oninput="handleDescriptionTyping()"></textarea>
+            
+            <!-- Live NLP Feedback Pill -->
+            <div id="ai-live-preview" style="margin-top: 8px; font-size: 0.8rem; display:none; align-items:center; gap:8px;">
+              <span class="badge badge-info" id="live-cat-badge">AI Category: -</span>
+              <span id="live-urgency-badge" class="badge">Urgency: -</span>
+              <span id="live-rat-badge" class="badge" style="display:none;">Screen Share App Detected</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Upload Evidence (Screenshot / PDF / SMS proof)</label>
+              <input type="file" id="report-file" class="form-input" accept="image/*,.pdf,.txt">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Your Contact / Email (Optional / Anonymous)</label>
+              <input type="text" id="report-reporter" class="form-input" placeholder="Optional for case follow-up">
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
+            <p style="font-size:0.8rem; color:var(--text-muted);">
+              🛡️ Submissions are sanitized, scanned for duplicates, and processed through our NLP engine.
+            </p>
+            <button type="submit" class="btn btn-primary" id="btn-submit-report">
+              🚀 Submit Fraud Report
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Report Submission Success Box -->
+      <div id="report-success-box" style="display:none;" class="card">
+        <div style="display:flex; align-items:flex-start; gap:16px;">
+          <div style="font-size:2.5rem;">✅</div>
+          <div>
+            <h3 style="color:#34d399; font-size:1.2rem; margin-bottom:4px;">Report Accepted & Database Updated</h3>
+            <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:10px;">
+              Your fraud report has been recorded under Reference <strong id="success-ref-num" style="color:white; font-family:'JetBrains Mono',monospace;"></strong>.
+            </p>
+            <div id="success-receiver-impact" style="font-size:0.86rem; color:#cbd5e1; background:rgba(15,23,42,0.8); padding:10px; border-radius:8px; border:1px solid var(--border-color);">
+              <!-- Populated dynamically -->
+            </div>
+            <div style="margin-top:14px; display:flex; gap:10px;">
+              <button class="btn btn-secondary btn-sm" onclick="navigateTo('history')">View In Report History</button>
+              <button class="btn btn-secondary btn-sm" onclick="resetReportForm()">Report Another Case</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- 4. FRAUD REPORT HISTORY PAGE -->
+    <!-- ======================================================== -->
+    <section id="page-history" class="page-section">
+      <div class="section-header">
+        <h1 class="section-title">Fraud Report Registry</h1>
+        <p class="section-desc">Search and filter reported incidents across India, view incident descriptions, and inspect evidence.</p>
+      </div>
+
+      <!-- Filter Controls -->
+      <div class="card" style="padding: 1rem;">
+        <div class="form-row" style="grid-template-columns: 2fr 1fr 1fr; align-items: center;">
+          <div class="form-group" style="margin-bottom:0;">
+            <input type="text" id="history-search" class="form-input" placeholder="Search by UPI ID, Reference, or description..." oninput="debounceHistorySearch()">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <select id="history-category-filter" class="form-select" onchange="loadReportHistory()">
+              <option value="">All Categories</option>
+              <option value="Fake KYC Messages">Fake KYC Messages</option>
+              <option value="Fraudulent Payment Requests">Fraudulent Payment Requests</option>
+              <option value="QR-Code Scams">QR-Code Scams</option>
+              <option value="Fake Insurance Agents">Fake Insurance Agents</option>
+              <option value="Fake Bank Employees">Fake Bank Employees</option>
+              <option value="Fake Customer Care Representatives">Fake Customer Care</option>
+              <option value="Impersonation and Investment Scams">Investment Scams</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <select id="history-status-filter" class="form-select" onchange="loadReportHistory()">
+              <option value="">All Statuses</option>
+              <option value="verified">Verified</option>
+              <option value="under_review">Under Review</option>
+              <option value="pending">Pending</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Data Table -->
+      <div class="card">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Receiver UPI ID</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>AI Detection</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+              <tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Loading fraud records...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- 5. RECEIVER RISK DETAILS PAGE -->
+    <!-- ======================================================== -->
+    <section id="page-receiver-lookup" class="page-section">
+      <div class="section-header">
+        <h1 class="section-title">Receiver Risk Intelligence</h1>
+        <p class="section-desc">Lookup any UPI ID or phone number to inspect cumulative risk profiles, verified fraud tags, and complaint logs.</p>
+      </div>
+
+      <!-- Lookup Form -->
+      <div class="card" style="padding:1.2rem;">
+        <form onsubmit="handleReceiverLookup(event)" style="display:flex; gap:10px;">
+          <input type="text" id="lookup-input" class="form-input" placeholder="Enter UPI ID (e.g. sbi.kyc.verification@okhdfcbank) or phone number..." style="flex:1;" required>
+          <button type="submit" class="btn btn-primary" style="white-space:nowrap;">
+            🔍 Inspect Profile
+          </button>
+        </form>
+      </div>
+
+      <!-- Profile Container -->
+      <div id="lookup-result-container" style="display:none;">
+        <div class="card" id="lookup-profile-card">
+          <!-- Dynamically populated profile card -->
+        </div>
+
+        <div class="dashboard-columns">
+          <div class="card">
+            <h3 class="card-title">Associated Fraud Reports</h3>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ref</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="lookup-reports-body">
+                  <tr><td colspan="4">No reports found</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Blocked Payment Interceptions</h3>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Block Ref</th>
+                    <th>Amount</th>
+                    <th>Reason</th>
+                  </tr>
+                </thead>
+                <tbody id="lookup-blocked-body">
+                  <tr><td colspan="3">No blocked attempts</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- 6. ADMIN PANEL PAGE -->
+    <!-- ======================================================== -->
+    <section id="page-admin" class="page-section">
+      <div class="section-header">
+        <h1 class="section-title">Administrative Moderation & Governance</h1>
+        <p class="section-desc">Review community submissions, mark verified fraudsters, configure risk thresholds, and audit security logs.</p>
+      </div>
+
+      <!-- Login View if not authenticated -->
+      <div id="admin-login-view" class="card" style="max-width:440px; margin: 2rem auto;">
+        <h3 class="card-title">Administrator Authentication</h3>
+        <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:1.2rem;">
+          Sign in to access report moderation, risk thresholds, and transaction audit logs.
+        </p>
+        <form onsubmit="handleAdminLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input type="text" id="admin-user-input" class="form-input" value="admin" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="admin-pass-input" class="form-input" value="Admin@123" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Sign In as Admin</button>
+        </form>
+      </div>
+
+      <!-- Authenticated Admin Dashboard -->
+      <div id="admin-authenticated-view" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+          <div>
+            <span class="badge badge-info">Logged in as Administrator</span>
+            <span id="admin-user-display" style="font-weight:600; margin-left:6px;">admin</span>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="handleAdminLogout()">Sign Out</button>
+        </div>
+
+        <!-- Threshold Management Card -->
+        <div class="card">
+          <h3 class="card-title">⚙️ Risk Engine Threshold Configuration</h3>
+          <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:12px;">
+            Configure risk classification boundaries. Payments meeting or exceeding the High Risk threshold are automatically rejected by the backend.
+          </p>
+          <form onsubmit="handleSaveThresholds(event)" style="display:flex; gap:16px; align-items:flex-end;">
+            <div class="form-group" style="margin-bottom:0; flex:1;">
+              <label class="form-label">Low Risk Ceiling (Default: 35)</label>
+              <input type="number" id="threshold-low-input" class="form-input" min="10" max="60" required>
+            </div>
+            <div class="form-group" style="margin-bottom:0; flex:1;">
+              <label class="form-label">High Risk Floor (Default: 70 - Auto Blocked)</label>
+              <input type="number" id="threshold-high-input" class="form-input" min="50" max="95" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Thresholds</button>
+          </form>
+        </div>
+
+        <!-- Moderation Table -->
+        <div class="card">
+          <div class="card-title">
+            <span>🛡️ Report Moderation Queue</span>
+            <span style="font-size:0.8rem; color:var(--text-secondary);">Recalculates receiver risk immediately</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ref</th>
+                  <th>Receiver UPI</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Moderation Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-moderation-body">
+                <tr><td colspan="6">Loading reports...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Audit Logs: Blocked Attempts & Completed Transactions -->
+        <div class="card">
+          <h3 class="card-title">📋 Payment Security Audit Log</h3>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Reference</th>
+                  <th>Receiver UPI</th>
+                  <th>Amount</th>
+                  <th>Status / Reason</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="admin-audit-body">
+                <tr><td colspan="6">Loading audit records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal: Report Details View -->
+  <div class="modal-overlay" id="report-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-report-title" style="font-size:1.15rem;">Report Details</h3>
+        <button class="close-btn" onclick="closeModal('report-modal')">&times;</button>
+      </div>
+      <div id="modal-report-content">
+        <!-- Dynamically injected -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Simulated Payment Receipt -->
+  <div class="modal-overlay" id="receipt-modal">
+    <div class="modal-box" style="text-align:center;">
+      <div style="font-size:3rem; margin-bottom:10px;">🎉</div>
+      <h3 style="color:#34d399; font-size:1.3rem; margin-bottom:6px;">Simulated Payment Completed</h3>
+      <p style="color:var(--text-secondary); font-size:0.86rem; margin-bottom:1.2rem;">
+        Payment verified and logged in prototype ledger.
+      </p>
+      <div id="receipt-details" style="background:rgba(15,23,42,0.8); border:1px solid var(--border-color); border-radius:10px; padding:16px; text-align:left; font-size:0.88rem; line-height:1.7;">
+        <!-- Dynamically injected -->
+      </div>
+      <button class="btn btn-primary btn-block" style="margin-top:1.2rem;" onclick="closeModal('receipt-modal')">Done</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div>UPI FRAUD REPORTING & PATTERN DETECTION USING AI &copy; 2026</div>
+    <div style="margin-top:4px; font-size:0.75rem; color:var(--text-muted);">
+      Disclaimer: This is a secure academic prototype designed for risk pattern analysis and payment simulation. Does not replace authorized banking applications.
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/static/js/app.js"></script>
+  <script src="/static/js/risk_checker.js"></script>
+  <script src="/static/js/report_fraud.js"></script>
+  <script src="/static/js/history_receiver.js"></script>
+  <script src="/static/js/admin.js"></script>
+</body>
+</html>
