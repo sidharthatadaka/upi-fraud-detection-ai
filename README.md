@@ -127,6 +127,57 @@ Open your browser and navigate to:
 
 ---
 
+## 🌐 Deployment Guide (GitHub, Render & Vercel)
+
+### 1. Push to GitHub
+
+1. Create a new repository on [GitHub](https://github.com/new) (e.g. named `upi-fraud-detection-ai`). Do **not** initialize with a README (one is already prepared).
+2. Connect your local repository and push:
+```powershell
+git remote add origin https://github.com/<YOUR_GITHUB_USERNAME>/<YOUR_REPOSITORY_NAME>.git
+git branch -M main
+git push -u origin main
+```
+
+---
+
+### 2. Deploy on Render (Recommended for Flask & Python ML)
+
+Render runs Python web services natively with Gunicorn.
+
+#### Option A: 1-Click Blueprint (Easiest)
+1. Go to [Render Dashboard](https://dashboard.render.com).
+2. Click **New +** > **Blueprint**.
+3. Connect your GitHub repository.
+4. Render will automatically read [`render.yaml`](file:///C:/Users/HP/.gemini/antigravity/scratch/upi_fraud_detection/render.yaml) and deploy with zero configuration!
+
+#### Option B: Manual Web Service
+1. Go to [Render Dashboard](https://dashboard.render.com) and click **New +** > **Web Service**.
+2. Connect your GitHub repository.
+3. Configure settings:
+   - **Environment:** `Python`
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `gunicorn app:app`
+4. In **Environment Variables**, set:
+   - `DB_TYPE` = `sqlite` (or your cloud MySQL credentials)
+   - `SECRET_KEY` = `your-secret-key`
+   - `AUTO_BLOCK_HIGH_RISK` = `true`
+5. Click **Deploy Web Service**.
+
+---
+
+### 3. Deploy on Vercel (Serverless Python)
+
+1. Install Vercel CLI (`npm install -g vercel`) or go to [Vercel Dashboard](https://vercel.com/new).
+2. Import your GitHub repository.
+3. Vercel automatically detects [`vercel.json`](file:///C:/Users/HP/.gemini/antigravity/scratch/upi_fraud_detection/vercel.json).
+4. In **Environment Variables**, add:
+   - `SECRET_KEY` = `your-secret-key`
+   - `DB_TYPE` = `sqlite`
+5. Click **Deploy**. Vercel will build and serve the application serverlessly.
+
+---
+
 ## 🧪 Testing Scenarios
 
 Click **"Fast Test Scenarios"** on the dashboard or input these test accounts on the **Check Payment Risk** page:
